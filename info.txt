@@ -1,3 +1,9 @@
+python -m venv venv
+
+.\venv\Scripts\activate.ps1
+
+python -m pip install -r requirements.txt
+
 django-admin.exe startproject conf ./
 
 python .\manage.py makemigrations
@@ -6,6 +12,6 @@ python .\manage.py migrate
 
 python .\manage.py createsuperuser
 
-python .\manage.py runserve
+python .\manage.py runserver
 
 python .\manage.py startapp cooking
