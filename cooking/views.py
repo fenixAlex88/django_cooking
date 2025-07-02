@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import Post
 from django.db.models import F
+from .forms import PostAddForm
 
 def index(request):
 	"""Для главной страницы"""
@@ -31,3 +32,27 @@ def post_detail(request, pk):
 		'ext_posts': ext_posts,
 	}
 	return render(request, 'cooking/article_detail.html', context)
+
+def add_post(request):
+	"""Добавление статьи от пользователя, без админки"""
+	if request.method == 'POST':
+		form = PostAddForm(request.POST, request.FILES)
+		if form.is_valid():
+			post = Post.objects.create(**form.cleaned_data)
+			post.save()
+			return redirect('post_detail', pk=post.pk)
+		else:
+			context = {
+				'title': 'Добавить статью',
+				'form': form,
+			}
+			return render(request, 'cooking/article_add_form.html', context)
+	else:
+		form = PostAddForm()
+
+	context = {
+		'title': 'Добавить статью',
+		'form': form,
+	}
+	return render(request,'cooking/article_add_form.html',context)
+
