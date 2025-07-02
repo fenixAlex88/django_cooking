@@ -42,6 +42,7 @@ def add_post(request):
 		if form.is_valid():
 			post = Post.objects.create(**form.cleaned_data)
 			post.save()
+			messages.success(request, 'Статья успешно добавлена')
 			return redirect('post_detail', pk=post.pk)
 	else:
 		form = PostAddForm()
@@ -73,6 +74,7 @@ def user_login(request):
 def user_logout(request):
 	"""Выход пользователя"""
 	logout(request)
+	messages.info(request, 'Вы вышли из аккаунта')
 	return redirect('index')
 
 def user_register(request):
@@ -81,6 +83,7 @@ def user_register(request):
 		form = RegistrationForm(data=request.POST)
 		if form.is_valid():
 			form.save()
+			messages.success(request, 'Вы успешно зарегистрировали аккаунт')
 			return redirect('login')
 	else:
 		form = RegistrationForm()
