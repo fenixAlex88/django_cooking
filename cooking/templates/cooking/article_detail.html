@@ -21,7 +21,11 @@
 			<p class="card-text">{{ post.content | linebreaks }}</p>
 		</div>
 			<div class="card-footer d-flex justify-content-between"><p class="card-text">{{ post.updated_at }}</p>
-				<a href="{% url 'profile' user_id=post.auhtor.id %}">Автор статьи: {{ post.author }}</a>
+				{% if post.author %}
+                  <a href="{% url 'profile' user_id=post.author.id %}">Автор статьи: {{ post.author }}</a>
+                {% else %}
+                  <span class="text-muted">Автор неизвестен</span>
+                {% endif %}
 				<p class="card-text">{{ post.watched }}</p>
 			</div>
 		</div>
@@ -29,7 +33,7 @@
 
 		<!--  reviews-->
         {% if request.user.is_authenticated %}
-            <form action="{% url 'add_comment' post_id=post.pk %}" method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" id="comment-form">
                 {% csrf_token %}
                 {% include "components/_form_errors.html" %}
                 {{ comment_form }}
@@ -37,17 +41,9 @@
             </form>
         {% endif %}
     
-        {% for comment in comments %}
-          <div class="card mt-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <strong>{{ comment.user }}</strong>
-              <small class="text-muted">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
-            </div>
-            <div class="card-body">
-              <p class="card-text mb-0">{{ comment.text }}</p>
-            </div>
-          </div>
-        {% endfor %}
+        <div id="comments-block">
+          {% include "cooking/components/_comments_list.html" %}
+        </div>
 	</div>
 	<!--  Recommendation-->
 	<div class="col-1"></div>
@@ -67,5 +63,47 @@
 		</div>
 	</div>
 	</div>
+    <script>
+      function refreshComments() {
+        fetch("{% url 'load_comments' post.pk %}")
+          .then(response => response.text())
+          .then(html => {
+            document.getElementById("comments-block").innerHTML = html;
+          });
+      }
+      setInterval(refreshComments, 5000);
+      
+        document.addEventListener('DOMContentLoaded', function () {
+          const form = document.getElementById('comment-form');
+          if (!form) return;
+        
+          form.addEventListener('submit', function (e) {
+            e.preventDefault();
+        
+            const formData = new FormData(form);
+        
+            fetch("{% url 'add_comment' post_id=post.pk %}", {
+              method: 'POST',
+              headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+              },
+              body: formData
+            })
+            .then(response => {
+              if (!response.ok) throw new Error('Ошибка при отправке');
+              return response.text();
+            })
+            .then(html => {
+              document.getElementById('comments-block').innerHTML = html;
+              form.reset();
+            })
+            .catch(error => {
+              console.error(error);
+              alert("Не удалось добавить комментарий");
+            });
+          });
+        });
+    </script>
 {% endblock main %}
+
 

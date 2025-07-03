@@ -1,12 +1,22 @@
 {% load blog_tags %}
 
-<div class="list-group">
+<div class="list-group" id="category-list">
   {% get_all_categories as categories %}
   {% for category in categories %}
     {% url 'category_list' category.pk as cat_url %}
-    <a href="{{ cat_url }}"
-       class="list-group-item list-group-item-action {% if request.path == cat_url %}active{% endif %}">
+    <a href="{{ cat_url }}" class="list-group-item list-group-item-action" data-url="{{ cat_url }}">
       {{ category }}
     </a>
   {% endfor %}
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('#category-list a').forEach(link => {
+      if (link.getAttribute('href') === currentPath) {
+        link.classList.add('active');
+      }
+    });
+  });
+</script>
