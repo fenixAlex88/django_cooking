@@ -1,8 +1,12 @@
 {% load blog_tags %}
 
 <div class="list-group">
-	{% get_all_categories as categories %}
-	{% for category in categories %}
-		<a href="{{ category.get_absolute_url }}" class="list-group-item list-group-item-action">{{ category }}</a>
-	{% endfor %}
+  {% get_all_categories as categories %}
+  {% for category in categories %}
+    {% url 'category_list' category.pk as cat_url %}
+    <a href="{{ cat_url }}"
+       class="list-group-item list-group-item-action {% if request.path == cat_url %}active{% endif %}">
+      {{ category }}
+    </a>
+  {% endfor %}
 </div>
